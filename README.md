@@ -1,4 +1,8 @@
 
+## 👩‍💻 Developer
+
+**Author:** Zainab Mughal
+**Focus:** Cybersecurity & Web App Development
 # 🛡️ Small Business Security Health Checker
 
 ## 📖 Overview
@@ -156,10 +160,6 @@ http://localhost:4000/api/scan
 * 🔍 Check SSL expiry, DNS, and WHOIS
 * 💬 Add improvement tips per issue found
 
----
 
-## 👩‍💻 Developer
 
-**Author:** Zainab Mughal
-**Focus:** Cybersecurity & Web App Development
 
