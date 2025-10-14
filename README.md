@@ -2,8 +2,11 @@
 ## 👩‍💻 Developer
 
 **Author:** Zainab Mughal
+
 **Focus:** Cybersecurity & Web App Development
+
 ---
+
 # 🛡️ Small Business Security Health Checker
 
 ## 📖 Overview
