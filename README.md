@@ -163,6 +163,3 @@ http://localhost:4000/api/scan
 **Author:** Zainab Mughal
 **Focus:** Cybersecurity & Web App Development
 
----
-
-```
