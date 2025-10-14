@@ -1,0 +1,157 @@
+<<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security Health Checker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f6fa;
+      color: #2f3640;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      color: #273c75;
+    }
+    input {
+      padding: 10px;
+      width: 280px;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      background: #44bd32;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+      margin: 5px;
+    }
+    button:hover {
+      background: #4cd137;
+    }
+    .download {
+      background: #487eb0;
+    }
+    .download:hover {
+      background: #40739e;
+    }
+    .result {
+      background: white;
+      margin-top: 30px;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: left;
+      display: inline-block;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      width: 80%;
+      max-width: 700px;
+    }
+    .score {
+      font-size: 22px;
+      color: #e84118;
+      font-weight: bold;
+    }
+    pre {
+      text-align: left;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔒 Small Business Security Health Checker</h1>
+  <p>Enter your domain to check its security health.</p>
+  <input id="domain" placeholder="example.com" />
+  <button onclick="runScan()">Scan</button>
+  <button id="downloadBtn" class="download" style="display:none;">Download Report</button>
+
+  <div id="output" class="result" style="display:none;"></div>
+
+  <script>
+    let lastReport = null;
+
+    async function runScan() {
+      const domain = document.getElementById("domain").value.trim();
+      const output = document.getElementById("output");
+      const downloadBtn = document.getElementById("downloadBtn");
+
+      if (!domain) {
+        alert("Please enter a domain");
+        return;
+      }
+
+      output.style.display = "block";
+      output.innerHTML = "<p>🔍 Scanning, please wait...</p>";
+      downloadBtn.style.display = "none";
+      lastReport = null;
+
+      try {
+        const response = await fetch("http://localhost:4000/api/scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain })
+        });
+
+        if (!response.ok) {
+          throw new Error("Server error: " + response.status);
+        }
+
+        const data = await response.json();
+        lastReport = data;
+
+        output.innerHTML = `
+          <p><b>Domain:</b> ${data.domain}</p>
+          <p class="score">Security Score: ${data.score.percent}%</p>
+          <hr>
+          <p><b>HTTPS:</b> ${data.https.https ? "✅ Enabled" : "❌ Not Secure"}</p>
+          <p><b>HSTS:</b> ${data.https.hsts ? "✅ Enabled" : "❌ Not Found"}</p>
+          <p><b>Certificate Valid:</b> ${data.https.certificateValid ? "✅ Yes" : "❌ No"}</p>
+          <hr>
+          <p><b>Security Headers:</b></p>
+          <ul>
+            ${data.headers.checkedHeaders.map(h => `
+              <li>${h.name}: ${h.present ? "✅ Present" : "❌ Missing"}</li>
+            `).join("")}
+          </ul>
+          <hr>
+          <p><b>Ports:</b></p>
+          <ul>
+            ${data.ports.checkedPorts.map(p => `
+              <li>Port ${p.port}: ${p.open ? "🟢 Open" : "🔴 Closed"}</li>
+            `).join("")}
+          </ul>
+          <hr>
+          <details>
+            <summary>View Raw Data</summary>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          </details>
+        `;
+
+        downloadBtn.style.display = "inline-block";
+      } catch (err) {
+        output.innerHTML = "<p style='color:red;'>❌ " + err.message + "</p>";
+      }
+    }
+
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      if (!lastReport) return;
+      const domain = lastReport.domain || "report";
+      const blob = new Blob([JSON.stringify(lastReport, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `security_report_${domain}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
